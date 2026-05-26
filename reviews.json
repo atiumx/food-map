@@ -1,1 +1,21 @@
-[]
+[
+  {"id":"r00001","placeid":"p00001","source":"IG","overallrating":4.1,"reviewtext":"24小時營業，豚骨拉麵名店，建議避開正午高峰"},
+  {"id":"r00002","placeid":"p00002","source":"博客","overallrating":4.0,"reviewtext":"博多屋台文化體驗，必試明太子料理"},
+  {"id":"r00003","placeid":"p00003","source":"FB","overallrating":4.2,"reviewtext":"新鮮玄界灘海鮮，推薦烤牡蠣同生魚片"},
+  {"id":"r00004","placeid":"p00004","source":"IG","overallrating":4.0,"reviewtext":"長濱豚骨拉麵發祥地，超嫩叉燒"},
+  {"id":"r00005","placeid":"p00005","source":"博客","overallrating":4.4,"reviewtext":"立食天婦羅，炸穴子魚必試，性價比極高"},
+  {"id":"r00006","placeid":"p00006","source":"IG","overallrating":4.3,"reviewtext":"小眾精品咖啡店，拿鐵藝術感強"},
+  {"id":"r00007","placeid":"p00007","source":"博客","overallrating":4.1,"reviewtext":"博多站直通，交通便利"},
+  {"id":"r00008","placeid":"p00008","source":"FB","overallrating":4.2,"reviewtext":"玄界灘直送魚獲，午市超值套餐"},
+  {"id":"r00009","placeid":"p20001","source":"自己","reviewtext":"長崎站前老牌喫茶店，早上7點開門，午餐預算約¥999"},
+  {"id":"r00010","placeid":"p20002","source":"自己","reviewtext":"北九州市象徵城堡，福岡縣內唯一保留天守閣的城"},
+  {"id":"r00011","placeid":"p20003","source":"自己","reviewtext":"長崎燒菓子專門店，前身老牌洋菓子店ノスドール，主打罐裝蛋糕與燒菓子"},
+  {"id":"r00012","placeid":"p20004","source":"自己","reviewtext":"透過VR、4K立體劇場等數位內容還原軍艦島生活"},
+  {"id":"r00013","placeid":"p20005","source":"自己","reviewtext":"博多站南側人氣炭火燒肉店，主打九州產黑毛和牛，晚市建議預約"},
+  {"id":"r00014","placeid":"p10001","source":"IG","overallrating":4.1,"reviewtext":"天神人氣烘焙店，主打麵包與甜點"},
+  {"id":"r00015","placeid":"p10002","source":"IG","overallrating":4.3,"reviewtext":"中洲川端名物和菓子店，招牌鶴乃子，適合當手信"},
+  {"id":"r00016","placeid":"p10003","source":"IG","overallrating":4.2,"reviewtext":"博多站步行圈，招牌明太烏冬"},
+  {"id":"r00017","placeid":"p10004","source":"IG","overallrating":4.1,"reviewtext":"天神南站步行2分鐘，超人氣沾麵，常見排隊35分鐘"},
+  {"id":"r00018","placeid":"p10005","source":"IG","overallrating":4.0,"reviewtext":"近櫛田神社前駅，明太子法國麵包人氣店，需排隊約一小時"},
+  {"id":"r00019","placeid":"p10006","source":"IG","overallrating":4.2,"reviewtext":"博多站前隱藏老店，招牌炸豬排丼，開業逾50年"}
+]

@@ -1,1 +1,221 @@
-<!-- generated -->
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>福岡・北九州美食地圖</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg:#13120f; --surface:#1c1b18; --surface2:#232219;
+  --border:#2e2d29; --text:#d0cfc9; --muted:#7a7972;
+  --faint:#4a4942; --accent:#f5c842; --accent2:#4f98a3;
+  --red:#dd6974; --green:#6daa45;
+  --font:'Noto Sans TC',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px}
+#app{display:flex;height:100vh;width:100vw}
+#sidebar{width:320px;min-width:320px;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);overflow:hidden;z-index:10;transition:transform .25s ease}
+#sidebar.collapsed{transform:translateX(-320px)}
+#sidebar-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+#sidebar-header h1{font-size:15px;font-weight:700;color:var(--accent);letter-spacing:.02em}
+#sidebar-header p{font-size:11px;color:var(--muted);margin-top:2px}
+#filter-bar{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+#search-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:13px;width:100%;outline:none}
+#search-input:focus{border-color:var(--accent2)}
+.chip-row{display:flex;flex-wrap:wrap;gap:4px}
+.chip{padding:3px 9px;border-radius:20px;border:1px solid var(--border);font-size:11px;cursor:pointer;background:var(--surface2);color:var(--muted);transition:all .15s}
+.chip.active{background:var(--accent);color:#111;border-color:var(--accent);font-weight:600}
+.chip-label{font-size:10px;color:var(--faint);margin-right:2px;align-self:center}
+#place-list{flex:1;overflow-y:auto;padding:6px 0}
+#place-list::-webkit-scrollbar{width:4px}
+#place-list::-webkit-scrollbar-track{background:transparent}
+#place-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.place-item{padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.place-item:hover{background:var(--surface2)}
+.place-item.active{background:color-mix(in oklab,var(--accent) 12%,var(--surface2))}
+.place-name{font-size:13px;font-weight:600;color:var(--text)}
+.place-meta{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap}
+.tag{font-size:10px;padding:1px 6px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+.tag.cat{color:var(--accent);border-color:color-mix(in oklab,var(--accent) 35%,var(--border))}
+.tag.price{color:var(--green)}
+.tag.region{color:var(--accent2)}
+#count-bar{padding:6px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);flex-shrink:0}
+#map-wrap{flex:1;position:relative}
+#map{width:100%;height:100%}
+#toggle-btn{position:absolute;top:12px;left:12px;z-index:1000;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--text);font-size:16px}
+.lf-popup .leaflet-popup-content-wrapper{background:var(--surface2);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.5);color:var(--text);padding:0}
+.lf-popup .leaflet-popup-tip{background:var(--surface2)}
+.lf-popup .leaflet-popup-content{margin:0;width:280px!important}
+.popup-body{padding:14px 16px}
+.popup-name{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:6px}
+.popup-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.popup-note{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.popup-hours{font-size:11px;color:var(--faint);margin-bottom:8px}
+.popup-ratings{display:flex;gap:10px;margin-bottom:8px}
+.popup-rating{font-size:11px;color:var(--muted)}
+.popup-rating span{color:var(--text);font-weight:600}
+.popup-links{display:flex;flex-wrap:wrap;gap:6px}
+.popup-link{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--border);color:var(--accent2);text-decoration:none}
+.popup-link:hover{background:var(--accent2);color:#111}
+#status{position:absolute;top:52px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--muted);z-index:999;display:none}
+#status.show{display:block}
+#status.ok{color:var(--green);border-color:var(--green)}
+#status.err{color:var(--red);border-color:var(--red)}
+@media(max-width:640px){
+  #app{flex-direction:column}
+  #sidebar{width:100%;min-width:unset;height:48vh;min-height:48vh;border-right:none;border-bottom:1px solid var(--border)}
+  #sidebar.collapsed{transform:translateY(-100%)}
+  #map-wrap{flex:1}
+  #toggle-btn{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h1>🗺 福岡・北九州美食地圖</h1>
+      <p>October 2026 Trip</p>
+    </div>
+    <div id="filter-bar">
+      <input id="search-input" type="search" placeholder="搜尋地點名稱、標籤、地區...">
+      <div><span class="chip-label">分類</span><div class="chip-row" id="cat-chips"></div></div>
+      <div><span class="chip-label">地區</span><div class="chip-row" id="region-chips"></div></div>
+      <div><span class="chip-label">價格</span><div class="chip-row" id="price-chips"></div></div>
+    </div>
+    <div id="place-list"></div>
+    <div id="count-bar">載入中...</div>
+  </div>
+  <div id="map-wrap">
+    <button id="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div id="map"></div>
+    <div id="status"></div>
+  </div>
+</div>
+<script>
+const SUPABASE_URL='https://toxqfrsdkvfcmmgzbyux.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRveHFmcnNka3ZmY21tZ3pieXV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjA2MDQsImV4cCI6MjA5NTM5NjYwNH0.aGcqog-WVrTqLnT3vmH2cRvw5TxotAtnC6BKVUmekyA';
+const {createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
+let allPlaces=[],filteredPlaces=[],markers={},activeFilters={cat:null,region:null,price:null,q:''},activePlaceId=null;
+const map_=L.map('map',{center:[33.5904,130.4017],zoom:13});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map_);
+const CAT_COLOUR={'拉麵':'#f5c842','博多料理':'#e8874a','居酒屋':'#9b70d4','天婦羅':'#e06060','咖啡':'#a07850','住宿':'#4f98a3','壽司':'#60b8e0','景點':'#6daa45','甜品':'#e880b0','燒肉':'#dd6974','麵包':'#d4a060','烏冬':'#80c8a0','丼飯':'#c8a040'};
+function catColour(c){return CAT_COLOUR[c]||'#7a7972';}
+function makeIcon(cat){
+  const col=catColour(cat);
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36"><path d="M14 0C6.27 0 0 6.27 0 14c0 9.33 14 22 14 22s14-12.67 14-22C28 6.27 21.73 0 14 0z" fill="${col}" opacity=".95"/><circle cx="14" cy="14" r="7" fill="#111" opacity=".5"/></svg>`;
+  return L.divIcon({html:svg,className:'',iconSize:[28,36],iconAnchor:[14,36],popupAnchor:[0,-36]});
+}
+async function loadData(){
+  showStatus('載入中…');
+  try{
+    const [{data:places,error:pe},{data:reviews,error:re}]=await Promise.all([sb.from('places').select('*').order('id'),sb.from('reviews').select('*')]);
+    if(pe||re)throw pe||re;
+    allPlaces=places||[];
+    const revMap={};
+    (reviews||[]).forEach(r=>{revMap[r.placeid]=revMap[r.placeid]||[];revMap[r.placeid].push(r);});
+    allPlaces.forEach(p=>{p._reviews=revMap[p.id]||[];});
+    showStatus(`已載入 ${allPlaces.length} 個地點`,'ok');
+    buildChips();applyFilters();
+  }catch(e){
+    showStatus('Supabase 連線失敗，讀取本地資料…','err');
+    await loadLocalFallback();
+  }
+}
+async function loadLocalFallback(){
+  try{
+    const [pr,rr]=await Promise.all([fetch('./places.json'),fetch('./reviews.json')]);
+    const places=await pr.json();const reviews=await rr.json();
+    allPlaces=places;
+    const revMap={};
+    reviews.forEach(r=>{revMap[r.placeid]=revMap[r.placeid]||[];revMap[r.placeid].push(r);});
+    allPlaces.forEach(p=>{p._reviews=revMap[p.id]||[];});
+    showStatus(`本地資料 ${allPlaces.length} 個地點`,'ok');
+    buildChips();applyFilters();
+  }catch(e2){showStatus('資料載入失敗','err');}
+}
+function buildChips(){
+  const cats=[...new Set(allPlaces.map(p=>p.category).filter(Boolean))].sort();
+  const regions=[...new Set(allPlaces.map(p=>p.region).filter(Boolean))].sort();
+  const prices=[...new Set(allPlaces.map(p=>p.price).filter(Boolean))].sort();
+  renderChips('cat-chips',cats,'cat');
+  renderChips('region-chips',regions,'region');
+  renderChips('price-chips',prices,'price');
+}
+function renderChips(cid,items,key){
+  const el=document.getElementById(cid);el.innerHTML='';
+  items.forEach(item=>{
+    const btn=document.createElement('button');
+    btn.className='chip'+(activeFilters[key]===item?' active':'');
+    btn.textContent=item;
+    btn.onclick=()=>{activeFilters[key]=activeFilters[key]===item?null:item;buildChips();applyFilters();};
+    el.appendChild(btn);
+  });
+}
+function applyFilters(){
+  const q=activeFilters.q.toLowerCase();
+  filteredPlaces=allPlaces.filter(p=>{
+    if(activeFilters.cat&&p.category!==activeFilters.cat)return false;
+    if(activeFilters.region&&p.region!==activeFilters.region)return false;
+    if(activeFilters.price&&p.price!==activeFilters.price)return false;
+    if(q){const hay=[p.name,p.region,p.category,p.note,...(p.tags||[])].join(' ').toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  });
+  renderList();syncMarkers();
+}
+document.getElementById('search-input').addEventListener('input',e=>{activeFilters.q=e.target.value;applyFilters();});
+function renderList(){
+  const el=document.getElementById('place-list');el.innerHTML='';
+  filteredPlaces.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='place-item'+(p.id===activePlaceId?' active':'');
+    div.innerHTML=`<div class="place-name">${p.name}</div><div class="place-meta"><span class="tag cat">${p.category||''}</span><span class="tag region">${p.region||''}</span><span class="tag price">${p.price||''}</span>${(p.grating||p.tabelog)?`<span class="tag">⭐ ${p.grating||p.tabelog}</span>`:''}</div>`;
+    div.onclick=()=>focusPlace(p.id);
+    el.appendChild(div);
+  });
+  document.getElementById('count-bar').textContent=`顯示 ${filteredPlaces.length} / ${allPlaces.length} 個地點`;
+}
+function syncMarkers(){
+  const visibleIds=new Set(filteredPlaces.map(p=>p.id));
+  Object.entries(markers).forEach(([id,m])=>{if(!visibleIds.has(id)){map_.removeLayer(m);delete markers[id];}});
+  filteredPlaces.forEach(p=>{
+    if(!p.lat||!p.lng)return;
+    if(markers[p.id])return;
+    const m=L.marker([p.lat,p.lng],{icon:makeIcon(p.category)}).addTo(map_).bindPopup(buildPopup(p),{className:'lf-popup',maxWidth:300});
+    m.on('click',()=>focusPlace(p.id,false));
+    markers[p.id]=m;
+  });
+}
+function buildPopup(p){
+  const links=Object.entries(p.links||{}).filter(([,v])=>v).map(([k,v])=>`<a class="popup-link" href="${v}" target="_blank">${k.toUpperCase()}</a>`).join('');
+  const ratings=[p.grating?`<div class="popup-rating">Google <span>${p.grating}</span></div>`:'',p.tabelog?`<div class="popup-rating">Tabelog <span>${p.tabelog}</span></div>`:''].join('');
+  return `<div class="popup-body"><div class="popup-name">${p.name}</div><div class="popup-tags"><span class="tag cat">${p.category||''}</span><span class="tag region">${p.region||''}</span><span class="tag price">${p.price||''}</span></div>${p.note?`<div class="popup-note">${p.note}</div>`:''}${p.openingHours?`<div class="popup-hours">⏰ ${p.openingHours}</div>`:''}${ratings?`<div class="popup-ratings">${ratings}</div>`:''}${links?`<div class="popup-links">${links}</div>`:''}</div>`;
+}
+function focusPlace(id,pan=true){
+  activePlaceId=id;
+  const p=allPlaces.find(x=>x.id===id);
+  if(!p)return;
+  renderList();
+  if(pan&&p.lat&&p.lng)map_.setView([p.lat,p.lng],Math.max(map_.getZoom(),15));
+  if(markers[id])markers[id].openPopup();
+  const items=document.querySelectorAll('.place-item');
+  const idx=filteredPlaces.findIndex(x=>x.id===id);
+  if(items[idx])items[idx].scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+let statusTimer;
+function showStatus(msg,type=''){
+  const el=document.getElementById('status');
+  el.textContent=msg;el.className='show'+(type?' '+type:'');
+  clearTimeout(statusTimer);
+  if(type==='ok')statusTimer=setTimeout(()=>el.className='',3000);
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
+loadData();
+</script>
+</body>
+</html>
